@@ -17,6 +17,11 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@tiptap/core": "^3.14.0",
+    "@tiptap/markdown": "^3.14.0",
+    "@tiptap/pm": "^3.14.0",
+    "@tiptap/starter-kit": "^3.14.0",
+    "highlight.js": "^11.11.1",
     "marked": "^17.0.1",
     "tailwindcss": "^4.1.18"
   }

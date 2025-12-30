@@ -330,6 +330,12 @@
         color: var(--color-accent-foreground)
     }
 
+    /* Remove Tiptap default focus outline */
+    .ProseMirror,
+    .ProseMirror-focused {
+        outline: none !important;
+    }
+
     /* Dividers with text */
     .divider {
         @apply flex items-center my-6;

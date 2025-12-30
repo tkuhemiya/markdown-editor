@@ -1,23 +1,48 @@
 import { marked } from "marked"
+import { Editor } from '@tiptap/core'
+import StarterKit from '@tiptap/starter-kit'
+import { Markdown } from '@tiptap/markdown'
+import { CodeBlock } from '@tiptap/extension-code-block'
+import hljs from 'highlight.js'
 import { debounce, decompressText, compressText } from "./utils";
 
-const editor = document.getElementById("editor") as HTMLTextAreaElement;
-const view = document.getElementById("view") as HTMLDivElement;
+const CustomCodeBlock = CodeBlock.extend({
+  renderHTML({ node }) {
+    const code = node.textContent
+    const highlighted = hljs.highlightAuto(code).value
+    return ['pre', ['code', { class: 'hljs' }, highlighted]]
+  },
+})
 
 const urlHash = decodeURIComponent(location.hash.slice(1))
-editor.value = await decompressText(urlHash);
-view.innerHTML = await marked.parse(editor.value)
+const initialContent = await decompressText(urlHash);
 
-editor.addEventListener("input", debounce(saveState, 1000));
+const editor = new Editor({
+  element: document.getElementById('editor'),
+  extensions: [
+    StarterKit.configure({
+      codeBlock: false,
+    }),
+    CustomCodeBlock,
+    Markdown,
+  ],
+  content: initialContent,
+  contentType: 'markdown',
+  onUpdate: debounce(saveState, 1000),
+});
+
+editor.on('paste', ({ editor: tipTapEditor, event }) => {
+  const pastedText = event.clipboardData?.getData('text/plain');
+  if (pastedText) {
+    const html = marked.parse(pastedText);
+    tipTapEditor.commands.insertContent(html);
+    event.preventDefault();
+  }
+});
 
 async function saveState() {
-  const compressed = await compressText(editor.value);
-  updateView();
-  console.log(compressed)
+  const markdown = editor.getMarkdown();
+  const compressed = await compressText(markdown);
+  console.log(compressed);
   location.hash = encodeURIComponent(compressed);
-}
-
-async function updateView() {
-  view.innerHTML = await marked.parse(editor.value)
-
 }
