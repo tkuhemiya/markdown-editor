@@ -14,5 +14,10 @@
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "marked": "^17.0.1",
+    "tailwindcss": "^4.1.18"
   }
 }

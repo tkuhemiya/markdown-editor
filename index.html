@@ -1,14 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link href="/src/style.css" rel="stylesheet">
+    <link href="/src/theme.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>md-editor</title>
   </head>
-  <body>
-    <main>
-        <textarea id="editor" placeholder="type here"></textarea>
+  <body class="bg-background text-foreground">
+    <main class="flex flex-row">
+        <textarea id="editor" class="w-[50%] p-5 appearance-none border-0 p-0 m-0 bg-transparent outline-none resize-none" placeholder="type here"></textarea>
+        <div id="view" class="p-5">
+
+        </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
