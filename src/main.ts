@@ -1,4 +1,4 @@
-import { Marked, marked } from "marked"
+import { marked } from "marked"
 import { debounce, decompressText, compressText } from "./utils";
 
 const editor = document.getElementById("editor") as HTMLTextAreaElement;
