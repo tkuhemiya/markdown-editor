@@ -1,7 +1,7 @@
 // IndexedDB functions
 const DB_NAME = 'MarkdownEditorDB';
 const DB_VERSION = 1;
-const DOCS_STORE = 'documents';
+const DOCS_STORE = 'notes';
 
 export async function initDB(): Promise<IDBDatabase | null> {
   return new Promise((resolve, reject) => {

@@ -1,5 +1,5 @@
 
-export interface Document {
+export interface Note {
   id?: number;
   name: string;
   content: string;
@@ -8,11 +8,10 @@ export interface Document {
   lastOpened: Date;
 }
 
-export async function saveDocument(doc: Document): Promise<number> {
-  if (!db) await initDB();
+export async function saveNote(db: IDBDatabase, doc: Note): Promise<number> {
   return new Promise((resolve, reject) => {
-    const transaction = db!.transaction(["documents"], 'readwrite');
-    const store = transaction.objectStore("documents");
+    const transaction = db!.transaction(["notes"], 'readwrite');
+    const store = transaction.objectStore("notes");
 
     const request = store.put({
       ...doc,
@@ -25,10 +24,10 @@ export async function saveDocument(doc: Document): Promise<number> {
   });
 }
 
-export async function loadDocument(db: IDBDatabase, id: number): Promise<Document | null> {
+export async function loadNote(db: IDBDatabase, id: number): Promise<Note | null> {
   return new Promise((resolve, reject) => {
-    const transaction = db!.transaction(["documents"], 'readonly');
-    const store = transaction.objectStore("documents");
+    const transaction = db!.transaction(["notes"], 'readonly');
+    const store = transaction.objectStore("notes");
     const request = store.get(id);
 
     request.onsuccess = () => {
@@ -36,7 +35,7 @@ export async function loadDocument(db: IDBDatabase, id: number): Promise<Documen
       if (doc) {
         // Update lastOpened
         doc.lastOpened = new Date();
-        saveDocument(doc).then(() => resolve(doc)).catch(reject);
+        saveNote(db, doc).then(() => resolve(doc)).catch(reject);
       } else {
         resolve(null);
       }
@@ -45,10 +44,10 @@ export async function loadDocument(db: IDBDatabase, id: number): Promise<Documen
   });
 }
 
-export async function deleteDocument(db: IDBDatabase, id: number): Promise<void> {
+export async function deleteNote(db: IDBDatabase, id: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    const transaction = db!.transaction(["documents"], 'readwrite');
-    const store = transaction.objectStore("documents");
+    const transaction = db!.transaction(["notes"], 'readwrite');
+    const store = transaction.objectStore("notes");
     const request = store.delete(id);
 
     request.onsuccess = () => resolve();
@@ -56,10 +55,10 @@ export async function deleteDocument(db: IDBDatabase, id: number): Promise<void>
   });
 }
 
-export async function getLastOpenedDocument(db: IDBDatabase): Promise<Document | null> {
+export async function getLastOpenedNote(db: IDBDatabase): Promise<Note | null> {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(['documents'], 'readonly');
-    const store = tx.objectStore('documents');
+    const tx = db.transaction(['notes'], 'readonly');
+    const store = tx.objectStore('notes');
     const index = store.index('lastOpened');
 
     // Highest lastOpened value first
@@ -74,14 +73,14 @@ export async function getLastOpenedDocument(db: IDBDatabase): Promise<Document |
   });
 }
 
-export async function listDocuments(db: IDBDatabase): Promise<Document[]> {
+export async function listNotes(db: IDBDatabase): Promise<Note[]> {
   return new Promise((resolve, reject) => {
-    const transaction = db!.transaction(["documents"], 'readonly');
-    const store = transaction.objectStore("documents");
+    const transaction = db!.transaction(["notes"], 'readonly');
+    const store = transaction.objectStore("notes");
     const index = store.index('updatedAt');
     const request = index.openCursor(null, 'prev'); // Sort by updatedAt desc
 
-    const results: Document[] = [];
+    const results: Note[] = [];
     request.onsuccess = () => {
       const cursor = request.result;
       if (cursor) {

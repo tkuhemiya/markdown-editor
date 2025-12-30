@@ -7,25 +7,26 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { createLowlight, common } from 'lowlight'
 import { debounce } from "./utils";
 import { initDB } from "./db"
-import { getLastOpenedDocument } from "./document"
+import type { Note } from "./note";
+import { getLastOpenedNote, saveNote, loadNote, listNotes, deleteNote } from "./note";
 
 // Auto-focus editor on page load
 setTimeout(() => editor.commands.focus(), 100);
 
 // Global state
-let currentDocument: Document | null = null;
+let currentNote: Note | null = null;
 let hasUnsavedChanges = false;
-let documentSaveStates = new Map<number, 'idle' | 'saving' | 'saved' | 'unsaved'>();
+let noteSaveStates = new Map<number, 'idle' | 'saving' | 'saved' | 'unsaved'>();
 
 const lowlight = createLowlight(common)
 
 // Initialize database and load last document
-const DB = await initDB()
-if (DB === null || DB == undefined) {
+const db = await initDB() as IDBDatabase;
+if (db === null || db == undefined) {
   throw Error("error initializing database")
 }
-currentDocument = await getLastOpenedDocument(DB);
-const initialContent = currentDocument ? currentDocument.content : '';
+currentNote = await getLastOpenedNote(db);
+const initialContent = currentNote ? currentNote.content : '';
 
 const editor = new Editor({
   element: document.getElementById('editor'),
@@ -46,31 +47,31 @@ const editor = new Editor({
 
 // Auto-save function
 async function autoSave() {
-  if (!currentDocument || !currentDocument.id || !hasUnsavedChanges) return;
+  if (!currentNote || !currentNote.id || !hasUnsavedChanges) return;
 
-  const docId = currentDocument.id;
-  documentSaveStates.set(docId, 'saving');
-  updateDocumentList();
+  const docId = currentNote.id;
+  noteSaveStates.set(docId, 'saving');
+  updateNoteList();
 
   const markdown = editor.getMarkdown();
-  currentDocument.content = markdown;
-  currentDocument.updatedAt = new Date();
+  currentNote.content = markdown;
+  currentNote.updatedAt = new Date();
 
   try {
-    await saveDocument(currentDocument);
-    documentSaveStates.set(docId, 'saved');
+    await saveNote(db, currentNote);
+    noteSaveStates.set(docId, 'saved');
     hasUnsavedChanges = false;
-    updateDocumentList();
+    updateNoteList();
 
     // Reset to idle after 2 seconds
     setTimeout(() => {
-      documentSaveStates.set(docId, 'idle');
-      updateDocumentList();
+      noteSaveStates.set(docId, 'idle');
+      updateNoteList();
     }, 2000);
   } catch (error) {
-    documentSaveStates.set(docId, 'idle');
+    noteSaveStates.set(docId, 'idle');
     console.error('Auto-save failed:', error);
-    updateDocumentList();
+    updateNoteList();
   }
 }
 
@@ -78,8 +79,8 @@ async function autoSave() {
 const sidebar = document.getElementById('sidebar')!;
 const sidebarToggle = document.getElementById('sidebar-toggle')!;
 const mainContent = document.querySelector('.main-content')!;
-const newDocBtn = document.getElementById('new-doc')!;
-const docList = document.getElementById('doc-list')!;
+const newDocBtn = document.getElementById('new-note')!;
+const docList = document.getElementById('note-list')!;
 
 // Context menu
 const contextMenu = document.getElementById('context-menu')!;
@@ -109,8 +110,8 @@ newDocBtn.addEventListener('click', async () => {
     }
   }
 
-  const docName = await generateNextDocumentName();
-  currentDocument = {
+  const docName = await generateNextNoteName();
+  currentNote = {
     name: docName,
     content: '',
     createdAt: new Date(),
@@ -119,15 +120,15 @@ newDocBtn.addEventListener('click', async () => {
   };
 
   // Immediately save to get ID and make it appear in sidebar
-  currentDocument.id = await saveDocument(currentDocument);
-  documentSaveStates.set(currentDocument.id!, 'idle');
+  currentNote.id = await saveNote(db, currentNote);
+  noteSaveStates.set(currentNote.id!, 'idle');
 
   editor.commands.clearContent();
   hasUnsavedChanges = false;
-  updateDocumentList();
+  updateNoteList();
 });
 
-async function loadDocumentById(id: number) {
+async function loadNoteById(id: number) {
   if (hasUnsavedChanges) {
     const shouldSave = await showUnsavedModal();
     if (shouldSave === null) return; // Cancelled
@@ -137,28 +138,28 @@ async function loadDocumentById(id: number) {
   }
 
   try {
-    const doc = await loadDocument(id);
+    const doc = await loadNote(db, id);
     if (doc) {
-      currentDocument = doc;
+      currentNote = doc;
       editor.commands.setContent(doc.content, { contentType: 'markdown', parseOptions: { preserveWhitespace: true } });
       hasUnsavedChanges = false;
-      documentSaveStates.set(id, 'idle');
-      updateDocumentList();
+      noteSaveStates.set(id, 'idle');
+      updateNoteList();
     }
   } catch (error) {
     console.error('Failed to load document:', error);
   }
 }
 
-async function updateDocumentList() {
+async function updateNoteList() {
   try {
-    const docs = await listDocuments();
+    const docs = await listNotes(db);
     docList.innerHTML = '';
 
     docs.forEach(doc => {
       const li = document.createElement('li');
-      const state = documentSaveStates.get(doc.id!) || 'idle';
-      const isCurrent = currentDocument?.id === doc.id;
+      const state = noteSaveStates.get(doc.id!) || 'idle';
+      const isCurrent = currentNote?.id === doc.id;
       const hasChanges = hasUnsavedChanges && isCurrent;
 
       li.className = `doc-item ${isCurrent ? 'current' : ''} ${hasChanges ? 'unsaved' : ''} ${state}`;
@@ -174,7 +175,7 @@ async function updateDocumentList() {
 
       li.appendChild(nameDiv);
       li.appendChild(dateDiv);
-      li.addEventListener('click', () => loadDocumentById(doc.id!));
+      li.addEventListener('click', () => loadNoteById(doc.id!));
 
       docList.appendChild(li);
     });
@@ -222,18 +223,18 @@ function showUnsavedModal(): Promise<boolean | null> {
 }
 
 async function saveCurrentDocument() {
-  if (!currentDocument) return;
+  if (!currentNote) return;
 
-  const name = prompt('Enter document name:', currentDocument.name);
+  const name = prompt('Enter note name:', currentNote.name);
   if (!name) return;
 
-  currentDocument.name = name;
-  currentDocument.updatedAt = new Date();
+  currentNote.name = name;
+  currentNote.updatedAt = new Date();
 
   try {
-    currentDocument.id = await saveDocument(currentDocument);
+    currentNote.id = await saveNote(db, currentNote);
     hasUnsavedChanges = false;
-    updateDocumentList();
+    updateNoteList();
   } catch (error) {
     console.error('Failed to save document:', error);
   }
@@ -290,13 +291,13 @@ contextMenu.addEventListener('click', async (e) => {
 
   switch (action) {
     case 'rename':
-      await renameDocument(docId);
+      await renameNote(docId);
       break;
     case 'copy':
-      await copyDocumentContent(docId);
+      await copyNoteContent(docId);
       break;
     case 'delete':
-      await deleteDocumentHandler(docId);
+      await deleteNoteHandler(docId);
       break;
   }
 
@@ -310,34 +311,34 @@ document.addEventListener('click', (e) => {
 });
 
 // Context menu action functions
-async function renameDocument(id: number) {
+async function renameNote(id: number) {
   try {
-    const doc = await loadDocument(id);
+    const doc = await loadNote(db, id);
     if (!doc) return;
 
-    const newName = prompt('Enter new name:', doc.name);
+    const newName = prompt('Enter new note name:', doc.name);
     if (newName && newName.trim() !== '' && newName !== doc.name) {
       const trimmedName = newName.trim();
 
       // Check for conflicts
-      const docs = await listDocuments();
+      const docs = await listNotes(db);
       if (docs.some(d => d.name === trimmedName && d.id !== id)) {
-        alert('A document with this name already exists. Please choose a different name.');
+        alert('A note with this name already exists. Please choose a different name.');
         return;
       }
 
       doc.name = trimmedName;
-      await saveDocument(doc);
-      updateDocumentList();
+      await saveNote(db, doc);
+      updateNoteList();
     }
   } catch (error) {
     console.error('Failed to rename document:', error);
   }
 }
 
-async function copyDocumentContent(id: number) {
+async function copyNoteContent(id: number) {
   try {
-    const doc = await loadDocument(id);
+    const doc = await loadNote(db, id);
     if (!doc) return;
 
     await navigator.clipboard.writeText(doc.content);
@@ -347,7 +348,7 @@ async function copyDocumentContent(id: number) {
     console.error('Failed to copy content:', error);
     // Fallback for older browsers
     try {
-      const doc = await loadDocument(id);
+      const doc = await loadNote(db, id);
       if (!doc) return;
 
       const textArea = document.createElement('textarea');
@@ -363,25 +364,25 @@ async function copyDocumentContent(id: number) {
   }
 }
 
-async function deleteDocumentHandler(id: number) {
+async function deleteNoteHandler(id: number) {
   try {
-    await deleteDoc(id);
+    await deleteNote(db, id);
 
-    if (currentDocument?.id === id) {
-      currentDocument = null;
+    if (currentNote?.id === id) {
+      currentNote = null;
       editor.commands.clearContent();
       hasUnsavedChanges = false;
     }
 
-    updateDocumentList();
+    updateNoteList();
   } catch (error) {
     console.error('Failed to delete document:', error);
   }
 }
 
 // Name generation with conflict handling
-async function generateNextDocumentName(): Promise<string> {
-  const docs = await listDocuments();
+async function generateNextNoteName(): Promise<string> {
+  const docs = await listNotes(db);
   const existingNames = docs.map(d => d.name);
 
   let counter = 1;
@@ -389,20 +390,20 @@ async function generateNextDocumentName(): Promise<string> {
 
   while (existingNames.includes(candidate)) {
     counter++;
-    candidate = `Document ${counter}`;
+    candidate = `Note ${counter}`;
   }
 
   // Double-check for race conditions
-  const refreshedDocs = await listDocuments();
+  const refreshedDocs = await listNotes(db);
   const refreshedNames = refreshedDocs.map(d => d.name);
 
   if (refreshedNames.includes(candidate)) {
-    const newName = prompt('Naming conflict occurred. Please enter a different name:', candidate);
-    return newName && newName.trim() !== '' ? newName.trim() : `Document ${Date.now()}`;
+    const newName = prompt('Naming conflict occurred. Please enter a different note name:', candidate);
+    return newName && newName.trim() !== '' ? newName.trim() : `Note ${Date.now()}`;
   }
 
   return candidate;
 }
 
 // Initialize
-updateDocumentList();
+updateNoteList();
