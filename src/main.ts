@@ -31,6 +31,9 @@ const editor = new Editor({
   onUpdate: debounce(saveState, 1000),
 });
 
+// Auto-focus editor on page load
+setTimeout(() => editor.commands.focus(), 100);
+
 editor.on('paste', ({ editor: tipTapEditor, event }) => {
   const pastedText = event.clipboardData?.getData('text/plain');
   if (pastedText) {
@@ -38,6 +41,11 @@ editor.on('paste', ({ editor: tipTapEditor, event }) => {
     tipTapEditor.commands.insertContent(html);
     event.preventDefault();
   }
+});
+
+// Auto-focus editor when window gains focus
+window.addEventListener('focus', () => {
+  setTimeout(() => editor.commands.focus(), 50);
 });
 
 async function saveState() {
