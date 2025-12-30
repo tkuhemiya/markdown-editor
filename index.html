@@ -5,18 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="icon" type="image/svg+xml" href="/output.webp" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+
     <link href="/src/style.css" rel="stylesheet">
     <link href="/src/theme.css" rel="stylesheet">
 
     <title>md-editor</title>
   </head>
    <body class="bg-background text-foreground">
-     <main>
+     <div id="sidebar" class="sidebar">
+       <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+       <div class="sidebar-content">
+         <div class="sidebar-header">
+           <h3>Documents</h3>
+           <button id="new-doc">+ New</button>
+         </div>
+         <ul id="doc-list" class="doc-list"></ul>
+       </div>
+     </div>
+
+     <main class="main-content">
          <div id="editor" class="p-5 min-h-screen">
 
          </div>
      </main>
+
+     <div id="unsaved-modal" class="modal hidden">
+       <div class="modal-overlay"></div>
+       <div class="modal-content">
+         <p>You have unsaved changes. What would you like to do?</p>
+         <div class="modal-buttons">
+           <button id="save-changes">Save</button>
+           <button id="discard-changes">Discard</button>
+           <button id="cancel-action">Cancel</button>
+         </div>
+       </div>
+     </div>
+
+     <div id="context-menu" class="context-menu hidden">
+       <div class="context-menu-item" data-action="rename">Rename</div>
+       <div class="context-menu-item" data-action="copy">Copy Content</div>
+       <div class="context-menu-item" data-action="delete">Delete</div>
+     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
