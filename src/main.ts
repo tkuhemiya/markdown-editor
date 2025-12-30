@@ -5,8 +5,8 @@ const editor = document.getElementById("editor") as HTMLTextAreaElement;
 const view = document.getElementById("view") as HTMLDivElement;
 
 const urlHash = decodeURIComponent(location.hash.slice(1))
-
 editor.value = await decompressText(urlHash);
+view.innerHTML = await marked.parse(editor.value)
 
 editor.addEventListener("input", debounce(saveState, 1000));
 
