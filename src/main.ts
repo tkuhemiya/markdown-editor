@@ -5,104 +5,26 @@ import { Markdown } from '@tiptap/markdown'
 import { keymap } from '@tiptap/pm/keymap'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { createLowlight, common } from 'lowlight'
-import {
-  debounce,
-  initDB,
-  saveDocument,
-  loadDocument,
-  listDocuments,
-  getLastOpenedDocument,
-  deleteDocument as deleteDoc,
-  type Document
-} from "./utils";
+import { debounce } from "./utils";
+import { initDB } from "./db"
+import { getLastOpenedDocument } from "./document"
 
-// Tab indentation commands
-function getLinesInRange(doc: any, from: number, to: number) {
-  const lines: any[] = [];
-  doc.nodesBetween(from, to, (node: any, pos: number) => {
-    if (node.isBlock) {
-      lines.push({ start: pos, end: pos + node.nodeSize });
-    }
-  });
-  return lines;
-}
-
-const indentCommand = ({ state, dispatch }: any) => {
-  const { selection, tr } = state;
-
-  if (selection.empty) {
-    // No selection: insert tab
-    dispatch(tr.insertText('\t'));
-  } else {
-    // Selection: indent each line
-    const lines = getLinesInRange(state.doc, selection.from, selection.to);
-    lines.forEach(({ start }: any) => {
-      tr.insertText('\t', start);
-    });
-    dispatch(tr);
-  }
-
-  return true;
-};
-
-const outdentCommand = ({ state, dispatch }: any) => {
-  const { selection, tr } = state;
-
-  let from: number, to: number;
-  if (selection.empty) {
-    // Single line: outdent current line
-    const line = getLinesInRange(state.doc, selection.from, selection.from)[0];
-    from = to = line.start;
-  } else {
-    // Multi-line: outdent selection
-    from = selection.from;
-    to = selection.to;
-  }
-
-  const lines = getLinesInRange(state.doc, from, to);
-  lines.forEach(({ start, end }: any) => {
-    const lineText = state.doc.textBetween(start, end);
-    if (lineText.startsWith('\t')) {
-      tr.delete(start, start + 1);
-    } else if (lineText.startsWith('    ')) {
-      tr.delete(start, start + 4);
-    } else if (lineText.startsWith('  ')) {
-      tr.delete(start, start + 2);
-    } else if (lineText.startsWith(' ')) {
-      tr.delete(start, start + 1);
-    }
-  });
-
-  if (tr.docChanged) {
-    dispatch(tr);
-    return true;
-  }
-
-  return false;
-};
-
-// Tab extension
-const TabExtension = Extension.create({
-  addProseMirrorPlugins() {
-    return [
-      keymap({
-        'Tab': indentCommand,
-        'Shift-Tab': outdentCommand,
-      })
-    ]
-  }
-});
-
-const lowlight = createLowlight(common)
+// Auto-focus editor on page load
+setTimeout(() => editor.commands.focus(), 100);
 
 // Global state
 let currentDocument: Document | null = null;
 let hasUnsavedChanges = false;
 let documentSaveStates = new Map<number, 'idle' | 'saving' | 'saved' | 'unsaved'>();
 
+const lowlight = createLowlight(common)
+
 // Initialize database and load last document
-await initDB();
-currentDocument = await getLastOpenedDocument();
+const DB = await initDB()
+if (DB === null || DB == undefined) {
+  throw Error("error initializing database")
+}
+currentDocument = await getLastOpenedDocument(DB);
 const initialContent = currentDocument ? currentDocument.content : '';
 
 const editor = new Editor({
@@ -115,15 +37,12 @@ const editor = new Editor({
       lowlight,
     }),
     Markdown,
-    TabExtension,
   ],
   content: initialContent,
   contentType: 'markdown',
   onUpdate: debounce(autoSave, 1000),
 });
 
-// Auto-focus editor on page load
-setTimeout(() => editor.commands.focus(), 100);
 
 // Auto-save function
 async function autoSave() {

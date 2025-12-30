@@ -12,8 +12,9 @@
     <title>md-editor</title>
   </head>
    <body class="bg-background text-foreground">
-     <div id="sidebar" class="sidebar">
-       <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+
+    <div id="sidebar" class="sidebar">
+    <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
        <div class="sidebar-content">
          <div class="sidebar-header">
            <h3>Documents</h3>
@@ -24,7 +25,7 @@
      </div>
 
      <main class="main-content">
-         <div id="editor" class="p-5 min-h-screen">
+         <div id="editor" class="p-5 min-h-screen min-w-screen">
 
          </div>
      </main>
@@ -46,6 +47,7 @@
        <div class="context-menu-item" data-action="copy">Copy Content</div>
        <div class="context-menu-item" data-action="delete">Delete</div>
      </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
