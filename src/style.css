@@ -111,7 +111,12 @@
     }
 
     li {
-        @apply ml-4;
+        @apply ml-4 mb-2;
+    }
+
+    li p {
+        @apply mb-0;
+        display: inline;
     }
 
     li>ul,

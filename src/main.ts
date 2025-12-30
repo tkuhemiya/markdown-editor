@@ -6,6 +6,7 @@ import { CodeBlock } from '@tiptap/extension-code-block'
 import hljs from 'highlight.js'
 import { debounce, decompressText, compressText } from "./utils";
 
+// Custom code block with syntax highlighting
 const CustomCodeBlock = CodeBlock.extend({
   renderHTML({ node }) {
     const code = node.textContent
