@@ -4,48 +4,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="icon" type="image/svg+xml" href="/output.webp" />
+    <link rel="icon" type="image/svg+xml" href="/logo.webp" />
 
     <link href="/src/style.css" rel="stylesheet">
     <link href="/src/theme.css" rel="stylesheet">
 
     <title>md-editor</title>
   </head>
-   <body class="bg-background text-foreground">
+<body class="bg-background text-foreground">
 
-    <div id="sidebar" class="sidebar">
-    <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
-       <div class="sidebar-content">
-         <div class="sidebar-header">
-            <h3>Notes</h3>
-            <button id="new-note">+ New</button>
+     <div id="sidebar" class="fixed left-0 top-0 h-screen w-[250px] md:w-[250px] bg-card border-r border-border -translate-x-full transition-transform duration-100 ease z-[1000]">
+        <button id="sidebar-toggle" class="absolute right-[-40px] top-2.5 bg-primary text-primary-foreground border border-ring px-2 pb-1 rounded-md cursor-pointer text-base">☰</button>
+
+        <div class="h-full flex flex-col">
+          <div class="p-5 flex justify-between items-center mb-5 pb-2.5 border-b border-border">
+            <h3 class="m-0 text-lg text-foreground">Notes</h3>
+            <button id="new-note" class="bg-primary text-primary-foreground border border-ring px-2 py-1 rounded-md cursor-pointer text-sm">+ New</button>
           </div>
-          <ul id="note-list" class="note-list"></ul>
-       </div>
+          <ul id="note-list" class="list-none p-0 m-0 flex-1 overflow-y-auto"></ul>
+        </div>
+
      </div>
 
-     <main class="main-content">
+     <main class="ml-0 transition-margin-left duration-300 ease min-h-screen">
          <div id="editor" class=" py-10 px-15 min-h-screen min-w-screen">
 
          </div>
      </main>
 
-     <div id="unsaved-modal" class="modal hidden">
-       <div class="modal-overlay"></div>
-       <div class="modal-content">
-         <p>You have unsaved changes. What would you like to do?</p>
-         <div class="modal-buttons">
-           <button id="save-changes">Save</button>
-           <button id="discard-changes">Discard</button>
-           <button id="cancel-action">Cancel</button>
+     <!-- TODO: Automatically save unsaved changes-->
+     <div id="unsaved-modal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
+       <div class="absolute inset-0 bg-black/50"></div>
+       <div class="relative bg-card border border-border rounded-lg p-5 max-w-[400px] w-full shadow-lg">
+         <p class="m-0 mb-5 text-foreground">You have unsaved changes. What would you like to do?</p>
+         <div class="flex gap-2.5 justify-end">
+           <button id="save-changes" class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-primary text-primary-foreground">Save</button>
+           <button id="discard-changes" class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-destructive text-destructive-foreground">Discard</button>
+           <button id="cancel-action" class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-secondary text-secondary-foreground">Cancel</button>
          </div>
        </div>
      </div>
 
-     <div id="context-menu" class="context-menu hidden">
-       <div class="context-menu-item" data-action="rename">Rename</div>
-       <div class="context-menu-item" data-action="copy">Copy Content</div>
-       <div class="context-menu-item" data-action="delete">Delete</div>
+     <div id="context-menu" class="fixed bg-card border border-border rounded-md shadow-lg z-3000 min-w-[140px] hidden">
+       <div class="p-2 px-4 cursor-pointer text-sm text-foreground transition-colors hover:bg-accent m-0.5 rounded-t-md" data-action="rename">Rename</div>
+       <div class="p-2 px-4 cursor-pointer text-sm text-foreground transition-colors hover:bg-accent m-0.5" data-action="copy">Copy</div>
+       <div class="p-2 px-4 cursor-pointer text-sm text-destructive transition-colors  hover:bg-destructive hover:text-destructive-foreground m-0.5 rounded-b-md" data-action="delete">Delete</div>
      </div>
 
     <script type="module" src="/src/main.ts"></script>

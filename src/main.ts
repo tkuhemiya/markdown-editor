@@ -1,8 +1,7 @@
 import { marked } from "marked"
-import { Editor, Extension } from '@tiptap/core'
+import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from '@tiptap/markdown'
-import { keymap } from '@tiptap/pm/keymap'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { createLowlight, common } from 'lowlight'
 import { debounce } from "./utils";
@@ -26,7 +25,6 @@ if (db === null || db == undefined) {
   throw Error("error initializing database")
 }
 currentNote = await getLastOpenedNote(db);
-const initialContent = currentNote ? currentNote.content : '';
 
 const editor = new Editor({
   element: document.getElementById('editor'),
@@ -39,7 +37,7 @@ const editor = new Editor({
     }),
     Markdown,
   ],
-  content: initialContent,
+  content: currentNote ? currentNote.content : '',
   contentType: 'markdown',
   onUpdate: debounce(autoSave, 1000),
 });
@@ -80,18 +78,18 @@ const sidebar = document.getElementById('sidebar')!;
 const sidebarToggle = document.getElementById('sidebar-toggle')!;
 const mainContent = document.querySelector('.main-content')!;
 const newDocBtn = document.getElementById('new-note')!;
-const docList = document.getElementById('note-list')!;
+const noteList = document.getElementById('note-list')!;
 
 // Context menu
 const contextMenu = document.getElementById('context-menu')!;
 
 function toggleSidebar() {
-  sidebar.classList.toggle('open');
-  mainContent.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('translate-x-0');
+  mainContent.classList.toggle('md:ml-[250px]');
 
   if (window.innerWidth <= 768) {
     // Mobile: overlay mode
-    if (sidebar.classList.contains('open')) {
+    if (sidebar.classList.contains('translate-x-0')) {
       (mainContent as HTMLElement).style.display = 'none';
     } else {
       (mainContent as HTMLElement).style.display = '';
@@ -154,7 +152,7 @@ async function loadNoteById(id: number) {
 async function updateNoteList() {
   try {
     const docs = await listNotes(db);
-    docList.innerHTML = '';
+    noteList.innerHTML = '';
 
     docs.forEach(doc => {
       const li = document.createElement('li');
@@ -162,22 +160,22 @@ async function updateNoteList() {
       const isCurrent = currentNote?.id === doc.id;
       const hasChanges = hasUnsavedChanges && isCurrent;
 
-      li.className = `doc-item ${isCurrent ? 'current' : ''} ${hasChanges ? 'unsaved' : ''} ${state}`;
+      li.className = `m-1 rounded-md p-2.5 border-b border-border cursor-pointer transition-colors duration-200 ease hover:bg-accent ${isCurrent ? 'bg-primary text-primary-foreground' : ''} ${hasChanges ? 'italic' : ''} ${state}`;
       li.dataset.docId = doc.id!.toString();
 
       const nameDiv = document.createElement('div');
-      nameDiv.className = 'doc-name';
+      nameDiv.className = 'font-medium mb-1';
       nameDiv.textContent = doc.name;
 
       const dateDiv = document.createElement('div');
-      dateDiv.className = 'doc-date';
+      dateDiv.className = 'text-xs text-muted-foreground';
       dateDiv.textContent = new Date(doc.updatedAt).toLocaleDateString();
 
       li.appendChild(nameDiv);
       li.appendChild(dateDiv);
       li.addEventListener('click', () => loadNoteById(doc.id!));
 
-      docList.appendChild(li);
+      noteList.appendChild(li);
     });
   } catch (error) {
     console.error('Failed to load document list:', error);
@@ -273,9 +271,9 @@ function hideContextMenu() {
 }
 
 // Context menu event listeners
-docList.addEventListener('contextmenu', (e) => {
+noteList.addEventListener('contextmenu', (e) => {
   e.preventDefault();
-  const item = (e.target as Element).closest('.doc-item') as HTMLElement;
+  const item = (e.target as Element).closest('[class*="p-2.5"]') as HTMLElement;
   if (!item) return;
 
   const docId = parseInt(item.dataset.docId!);
@@ -380,7 +378,7 @@ async function deleteNoteHandler(id: number) {
   }
 }
 
-// Name generation with conflict handling
+// Name generation for conflict handling
 async function generateNextNoteName(): Promise<string> {
   const docs = await listNotes(db);
   const existingNames = docs.map(d => d.name);
