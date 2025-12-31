@@ -23,14 +23,14 @@ let currentNote: Note | null = null;
 let hasUnsavedChanges = false;
 let noteSaveStates = new Map<number, "idle" | "saving" | "saved" | "unsaved">();
 
-const lowlight = createLowlight(common);
-
 // Initialize database and load last document
 const db = (await initDB()) as IDBDatabase;
 if (db === null || db == undefined) {
-  throw Error("error initializing database");
+  console.error("couldn't initializing database");
 }
 currentNote = await getLastUpdatedNote(db);
+
+const lowlight = createLowlight(common);
 
 const editor = new Editor({
   element: document.getElementById("editor"),
@@ -57,10 +57,11 @@ const editor = new Editor({
 // Auto-save function
 async function autoSave() {
   if (!currentNote || !currentNote.id || !hasUnsavedChanges) return;
+  console.log("saving")
 
   const docId = currentNote.id;
   noteSaveStates.set(docId, "saving");
-  updateNoteList();
+  // updateNoteList();
 
   const markdown = editor.getMarkdown();
   currentNote.content = markdown;
@@ -87,25 +88,13 @@ async function autoSave() {
 // Sidebar functionality
 const sidebar = document.getElementById("sidebar")!;
 const sidebarToggle = document.getElementById("sidebar-toggle")!;
-const mainContent = document.querySelector(".main-content")!;
 const newDocBtn = document.getElementById("new-note")!;
 const noteList = document.getElementById("note-list")!;
-
 // Context menu
 const contextMenu = document.getElementById("context-menu")!;
 
 function toggleSidebar() {
   sidebar.classList.toggle("translate-x-0");
-  mainContent.classList.toggle("md:ml-[250px]");
-
-  if (window.innerWidth <= 768) {
-    // Mobile: overlay mode
-    if (sidebar.classList.contains("translate-x-0")) {
-      (mainContent as HTMLElement).style.display = "none";
-    } else {
-      (mainContent as HTMLElement).style.display = "";
-    }
-  }
 }
 
 sidebarToggle.addEventListener("click", toggleSidebar);
