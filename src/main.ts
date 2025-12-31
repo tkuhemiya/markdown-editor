@@ -14,6 +14,13 @@ import {
   listNotes,
   deleteNote,
 } from "./note";
+import {
+  toggleSidebar,
+  showUnsavedModal,
+  showContextMenu,
+  hideContextMenu,
+  updateNoteList,
+} from "./ui";
 
 // Auto-focus editor on page load
 setTimeout(() => editor.commands.focus(), 100);
@@ -57,7 +64,7 @@ const editor = new Editor({
 // Auto-save function
 async function autoSave() {
   if (!currentNote || !currentNote.id || !hasUnsavedChanges) return;
-  console.log("saving")
+  console.log("saving");
 
   const docId = currentNote.id;
   noteSaveStates.set(docId, "saving");
@@ -71,31 +78,33 @@ async function autoSave() {
     await saveNote(db, currentNote);
     noteSaveStates.set(docId, "saved");
     hasUnsavedChanges = false;
-    updateNoteList();
+    const notes = await listNotes(db);
+    updateNoteList(notes, currentNote.id, noteSaveStates, loadNoteById);
 
     // Reset to idle after 2 seconds
-    setTimeout(() => {
+    setTimeout(async () => {
       noteSaveStates.set(docId, "idle");
-      updateNoteList();
+      const notes = await listNotes(db);
+      updateNoteList(
+        notes,
+        currentNote?.id || null,
+        noteSaveStates,
+        loadNoteById,
+      );
     }, 2000);
   } catch (error) {
     noteSaveStates.set(docId, "idle");
     console.error("Auto-save failed:", error);
-    updateNoteList();
+    const notes = await listNotes(db);
+    updateNoteList(notes, currentNote.id, noteSaveStates, loadNoteById);
   }
 }
 
 // Sidebar functionality
-const sidebar = document.getElementById("sidebar")!;
 const sidebarToggle = document.getElementById("sidebar-toggle")!;
 const newDocBtn = document.getElementById("new-note")!;
-const noteList = document.getElementById("note-list")!;
 // Context menu
 const contextMenu = document.getElementById("context-menu")!;
-
-function toggleSidebar() {
-  sidebar.classList.toggle("translate-x-0");
-}
 
 sidebarToggle.addEventListener("click", toggleSidebar);
 
@@ -122,7 +131,8 @@ newDocBtn.addEventListener("click", async () => {
 
   editor.commands.clearContent();
   hasUnsavedChanges = false;
-  updateNoteList();
+  const notes = await listNotes(db);
+  updateNoteList(notes, currentNote?.id || null, noteSaveStates, loadNoteById);
 });
 
 async function loadNoteById(id: number) {
@@ -144,82 +154,17 @@ async function loadNoteById(id: number) {
       });
       hasUnsavedChanges = false;
       noteSaveStates.set(id, "idle");
-      updateNoteList();
+      const notes = await listNotes(db);
+      updateNoteList(
+        notes,
+        currentNote?.id || null,
+        noteSaveStates,
+        loadNoteById,
+      );
     }
   } catch (error) {
     console.error("Failed to load document:", error);
   }
-}
-
-async function updateNoteList() {
-  try {
-    const docs = await listNotes(db);
-    noteList.innerHTML = "";
-
-    docs.forEach((doc) => {
-      const li = document.createElement("li");
-      const state = noteSaveStates.get(doc.id!) || "idle";
-      const isCurrent = currentNote?.id === doc.id;
-      const hasChanges = hasUnsavedChanges && isCurrent;
-
-      li.className = `m-1 rounded-md p-2.5 border-b border-border cursor-pointer transition-colors duration-200 ease hover:bg-accent ${isCurrent ? "bg-primary text-primary-foreground" : ""} ${hasChanges ? "italic" : ""} ${state}`;
-      li.dataset.docId = doc.id!.toString();
-
-      const nameDiv = document.createElement("div");
-      nameDiv.className = "font-medium mb-1";
-      nameDiv.textContent = doc.name;
-
-      const dateDiv = document.createElement("div");
-      dateDiv.className = "text-xs text-muted-foreground";
-      dateDiv.textContent = new Date(doc.updatedAt).toLocaleDateString();
-
-      li.appendChild(nameDiv);
-      li.appendChild(dateDiv);
-      li.addEventListener("click", () => loadNoteById(doc.id!));
-
-      noteList.appendChild(li);
-    });
-  } catch (error) {
-    console.error("Failed to load document list:", error);
-  }
-}
-
-// Modal functionality
-const unsavedModal = document.getElementById("unsaved-modal")!;
-const saveBtn = document.getElementById("save-changes")!;
-const discardBtn = document.getElementById("discard-changes")!;
-const cancelBtn = document.getElementById("cancel-action")!;
-
-function showUnsavedModal(): Promise<boolean | null> {
-  return new Promise((resolve) => {
-    unsavedModal.classList.remove("hidden");
-
-    const cleanup = () => {
-      unsavedModal.classList.add("hidden");
-      saveBtn.removeEventListener("click", onSave);
-      discardBtn.removeEventListener("click", onDiscard);
-      cancelBtn.removeEventListener("click", onCancel);
-    };
-
-    const onSave = () => {
-      cleanup();
-      resolve(true);
-    };
-
-    const onDiscard = () => {
-      cleanup();
-      resolve(false);
-    };
-
-    const onCancel = () => {
-      cleanup();
-      resolve(null);
-    };
-
-    saveBtn.addEventListener("click", onSave);
-    discardBtn.addEventListener("click", onDiscard);
-    cancelBtn.addEventListener("click", onCancel);
-  });
 }
 
 async function saveCurrentDocument() {
@@ -234,7 +179,13 @@ async function saveCurrentDocument() {
   try {
     currentNote.id = await saveNote(db, currentNote);
     hasUnsavedChanges = false;
-    updateNoteList();
+    const notes = await listNotes(db);
+    updateNoteList(
+      notes,
+      currentNote?.id || null,
+      noteSaveStates,
+      loadNoteById,
+    );
   } catch (error) {
     console.error("Failed to save document:", error);
   }
@@ -260,20 +211,11 @@ window.addEventListener("focus", () => {
   setTimeout(() => editor.commands.focus(), 50);
 });
 
-// Context menu functions
-function showContextMenu(x: number, y: number, docId: number) {
-  contextMenu.style.left = `${x}px`;
-  contextMenu.style.top = `${y}px`;
-  contextMenu.dataset.docId = docId.toString();
-  contextMenu.classList.remove("hidden");
-}
-
-function hideContextMenu() {
-  contextMenu.classList.add("hidden");
-}
-
 // Context menu event listeners
-noteList.addEventListener("contextmenu", (e) => {
+document.addEventListener("contextmenu", (e) => {
+  const noteList = document.getElementById("note-list");
+  if (!noteList || !noteList.contains(e.target as Node)) return;
+
   e.preventDefault();
   const item = (e.target as Element).closest('[class*="p-2.5"]') as HTMLElement;
   if (!item) return;
@@ -310,7 +252,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Context menu action functions
 async function renameNote(id: number) {
   try {
     const doc = await loadNote(db, id);
@@ -331,7 +272,13 @@ async function renameNote(id: number) {
 
       doc.name = trimmedName;
       await saveNote(db, doc);
-      updateNoteList();
+      const notes = await listNotes(db);
+      updateNoteList(
+        notes,
+        currentNote?.id || null,
+        noteSaveStates,
+        loadNoteById,
+      );
     }
   } catch (error) {
     console.error("Failed to rename document:", error);
@@ -376,7 +323,13 @@ async function deleteNoteHandler(id: number) {
       hasUnsavedChanges = false;
     }
 
-    updateNoteList();
+    const notes = await listNotes(db);
+    updateNoteList(
+      notes,
+      currentNote?.id || null,
+      noteSaveStates,
+      loadNoteById,
+    );
   } catch (error) {
     console.error("Failed to delete document:", error);
   }
@@ -413,4 +366,8 @@ async function generateNextNoteName(): Promise<string> {
 }
 
 // Initialize
-updateNoteList();
+const initializeApp = async () => {
+  const notes = await listNotes(db);
+  updateNoteList(notes, currentNote?.id || null, noteSaveStates, loadNoteById);
+};
+initializeApp();
