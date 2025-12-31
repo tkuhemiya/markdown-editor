@@ -1,435 +1,440 @@
 @import "tailwindcss";
 
 @theme {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-selected: #8b014d;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-selected: #8b014d;
 
-    --font-sans: var(--font-sans);
-    --font-mono: var(--font-mono);
-    --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
 
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
-    --shadow-2xs: var(--shadow-2xs);
-    --shadow-xs: var(--shadow-xs);
-    --shadow-sm: var(--shadow-sm);
-    --shadow: var(--shadow);
-    --shadow-md: var(--shadow-md);
-    --shadow-lg: var(--shadow-lg);
-    --shadow-xl: var(--shadow-xl);
-    --shadow-2xl: var(--shadow-2xl);
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
 }
 
 @layer base {
-    body {
-        @apply bg-background text-foreground;
-        background-color: var(--background);
-        color: var(--foreground);
-        min-height: 100vh;
-    }
-
-    /* Headings */
-    h1 {
-        @apply text-4xl font-bold mb-6 mt-8;
-        color: var(--color-foreground);
-    }
-
-    h2 {
-        @apply text-3xl font-semibold mb-5 mt-7;
-        color: var(--color-foreground);
-    }
-
-    h3 {
-        @apply text-2xl font-semibold mb-4 mt-6;
-        color: var(--color-foreground);
-    }
-
-    h4 {
-        @apply text-xl font-medium mb-3 mt-5;
-        color: var(--color-foreground);
-    }
-
-    h5 {
-        @apply text-lg font-medium mb-3 mt-4;
-        color: var(--color-foreground);
-    }
-
-    h6 {
-        @apply text-base font-medium mb-2 mt-3;
-        color: var(--color-foreground);
-    }
-
-    /* Paragraphs */
-    p {
-        @apply m-0 leading-relaxed;
-        color: var(--color-muted-foreground);
-    }
-
-    /* Lists */
-    ul {
-        @apply list-disc list-inside;
-        color: var(--color-muted-foreground);
-    }
-
-    ol {
-        @apply list-decimal list-inside;
-        color: var(--color-muted-foreground);
-    }
-
-    li {
-        @apply m-0;
-    }
-
-    li p {
-        @apply m-0;
-        display: inline;
-    }
-
-    li>ul,
-    li>ol {
-        @apply mt-2 mb-2;
-    }
-
-    /* Links */
-    a {
-        @apply underline transition-colors;
-        color: var(--color-primary);
-    }
-
-    a:hover {
-        color: var(--color-accent);
-    }
-
-    /* Emphasis */
-    strong,
-    b {
-        @apply font-bold;
-        color: var(--color-foreground);
-    }
-
-    em,
-    i {
-        @apply italic;
-    }
-
-    mark {
-        @apply px-1 rounded;
-        background-color: var(--color-accent);
-        color: var(--color-accent-foreground);
-    }
-
-    del,
-    s {
-        @apply line-through;
-        color: var(--color-muted-foreground);
-        opacity: 0.6;
-    }
-
-    ins,
-    u {
-        @apply underline;
-    }
-
-    small {
-        @apply text-sm;
-        color: var(--color-muted-foreground);
-    }
-
-    sub {
-        @apply text-xs align-sub;
-    }
-
-    sup {
-        @apply text-xs align-super;
-    }
-
-    /* Code */
-    code:not(.hljs) {
-        @apply px-1.5 py-0.5 rounded text-sm;
-        font-family: var(--font-mono);
-        background-color: var(--color-muted);
-        color: var(--color-accent-foreground);
-    }
-
-    /* Syntax highlighting colors matching app theme */
-    .hljs {
-        background: transparent;
-        color: var(--color-foreground);
-    }
-
-    .hljs-keyword {
-        color: var(--color-primary);
-        font-weight: bold;
-    }
-
-    .hljs-string {
-        color: var(--color-accent);
-    }
-
-    .hljs-number {
-        color: var(--color-secondary);
-    }
-
-    .hljs-comment {
-        color: var(--color-muted-foreground);
-        font-style: italic;
-    }
-
-    .hljs-function {
-        color: var(--color-primary);
-    }
-
-    .hljs-variable {
-        color: var(--color-foreground);
-    }
-
-    .hljs-operator {
-        color: var(--color-foreground);
-    }
-
-    .hljs-punctuation {
-        color: var(--color-muted-foreground);
-    }
-
-    .hljs-attribute {
-        color: var(--color-accent);
-    }
-
-    .hljs-tag {
-        color: var(--color-primary);
-    }
-
-    .hljs-built_in,
-    .hljs-class {
-        color: var(--color-secondary);
-    }
-
-    pre {
-        @apply p-4 overflow-x-auto mb-4;
-        font-family: var(--font-mono);
-        background-color: var(--color-muted);
-        border-radius: var(--radius-lg);
-    }
-
-    pre code {
-        @apply bg-transparent p-0;
-        color: var(--color-foreground);
-    }
-
-    /* Blockquotes */
-    blockquote {
-        @apply border-l-4 pl-4 py-2 mb-4 italic;
-        border-color: var(--color-border);
-        color: var(--color-muted-foreground);
-        background-color: var(--color-muted);
-    }
-
-    /* Horizontal Rule */
-    hr {
-        @apply my-8 border-t-2;
-        border-color: var(--color-border);
-    }
-
-    /* Tables */
-    table {
-        @apply w-full border-collapse mb-4 text-sm;
-    }
-
-    thead {
-        background-color: var(--color-muted);
-    }
-
-    th {
-        @apply px-4 py-2 text-left font-semibold;
-        border: 1px solid var(--color-border);
-        color: var(--color-foreground);
-    }
-
-    td {
-        @apply px-4 py-2;
-        border: 1px solid var(--color-border);
-        color: var(--color-muted-foreground);
-    }
-
-    tbody tr:nth-child(even) {
-        background-color: var(--color-muted);
-        opacity: 0.5;
-    }
-
-    tbody tr:hover {
-        background-color: var(--color-accent);
-        opacity: 0.3;
-    }
-
-    /* Images */
-    img {
-        @apply max-w-full h-auto mb-4;
-        border-radius: var(--radius-lg);
-    }
-
-    /* Task Lists */
-    input[type="checkbox"] {
-        @apply mr-2 cursor-pointer;
-        accent-color: var(--color-primary);
-    }
-
-    /* Definition Lists */
-    dl {
-        @apply mb-4;
-    }
-
-    dt {
-        @apply font-bold mt-2;
-        color: var(--color-foreground);
-    }
-
-    dd {
-        @apply ml-6 mb-2;
-        color: var(--color-muted-foreground);
-    }
-
-    /* Abbreviations */
-    abbr {
-        @apply border-b-2 border-dotted cursor-help;
-        border-color: var(--color-border);
-    }
-
-    /* Keyboard Input */
-    kbd {
-        @apply px-2 py-1 text-sm shadow-sm;
-        font-family: var(--font-mono);
-        background-color: var(--color-secondary);
-        color: var(--color-secondary-foreground);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-sm);
-    }
-
-    /* Sample Output */
-    samp {
-        @apply px-1;
-        font-family: var(--font-mono);
-        background-color: var(--color-muted);
-        border-radius: var(--radius-sm);
-    }
-
-    /* Variables */
-    var {
-        @apply italic;
-        font-family: var(--font-mono);
-    }
-
-    /* Figures */
-    figure {
-        @apply mb-4;
-    }
-
-    figcaption {
-        @apply text-sm mt-2 text-center italic;
-        color: var(--color-muted-foreground);
-    }
-
-    /* Details/Summary */
-    details {
-        @apply mb-4 p-4;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        background-color: var(--color-card);
-    }
-
-    summary {
-        @apply cursor-pointer font-semibold;
-        color: var(--color-foreground);
-    }
-
-    summary:hover {
-        color: var(--color-primary);
-    }
-
-    ::selection {
-        background-color: var(--color-selected)
-    }
-
-    a::selection {
-        color: var(--color-accent-foreground)
-    }
-
-    .tiptap {
-        min-height: 90vh !important;
-        display: block;
-        cursor: text;
-    }
-
-    .ProseMirror,
-    .ProseMirror-focused {
-        outline: none !important;
-        tab-size: 4;
-        -moz-tab-size: 4;
-        -webkit-tab-size: 4;
-    }
-
-    .p-2\.5.saving .font-medium.mb-1::after {
-        content: " (saving...)";
-        opacity: 0.6;
-    }
-
-    .p-2\.5.saved .font-medium.mb-1::after {
-        content: " ✓";
-        color: green;
-        opacity: 0.8;
-    }
-
-    /* Dividers with text */
-    .divider {
-        @apply flex items-center my-6;
-    }
-
-    .divider::before,
-    .divider::after {
-        @apply flex-1;
-        content: '';
-        border-top: 1px solid var(--color-border);
-    }
-
-    .divider::before {
-        @apply mr-4;
-    }
-
-    .divider::after {
-        @apply ml-4;
-    }
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100vh;
+  }
+
+  /* Headings */
+  h1 {
+    @apply text-4xl font-bold mb-6 mt-8;
+    color: var(--color-foreground);
+  }
+
+  h2 {
+    @apply text-3xl font-semibold mb-5 mt-7;
+    color: var(--color-foreground);
+  }
+
+  h3 {
+    @apply text-2xl font-semibold mb-4 mt-6;
+    color: var(--color-foreground);
+  }
+
+  h4 {
+    @apply text-xl font-medium mb-3 mt-5;
+    color: var(--color-foreground);
+  }
+
+  h5 {
+    @apply text-lg font-medium mb-3 mt-4;
+    color: var(--color-foreground);
+  }
+
+  h6 {
+    @apply text-base font-medium mb-2 mt-3;
+    color: var(--color-foreground);
+  }
+
+  /* Paragraphs */
+  p {
+    @apply m-0 leading-relaxed;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Lists */
+  ul {
+    @apply list-disc list-inside;
+    color: var(--color-muted-foreground);
+  }
+
+  ol {
+    @apply list-decimal list-inside;
+    color: var(--color-muted-foreground);
+  }
+
+  li {
+    @apply m-0;
+  }
+
+  li p {
+    @apply m-0;
+    display: inline;
+  }
+
+  li > ul,
+  li > ol {
+    @apply mt-2 mb-2;
+  }
+
+  /* Links */
+  a {
+    @apply underline transition-colors;
+    color: var(--color-primary);
+  }
+
+  a:hover {
+    color: var(--color-accent);
+  }
+
+  /* Emphasis */
+  strong,
+  b {
+    @apply font-bold;
+    color: var(--color-foreground);
+  }
+
+  em,
+  i {
+    @apply italic;
+  }
+
+  mark {
+    @apply px-1 rounded;
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+
+  del,
+  s {
+    @apply line-through;
+    color: var(--color-muted-foreground);
+    opacity: 0.6;
+  }
+
+  ins,
+  u {
+    @apply underline;
+  }
+
+  small {
+    @apply text-sm;
+    color: var(--color-muted-foreground);
+  }
+
+  sub {
+    @apply text-xs align-sub;
+  }
+
+  sup {
+    @apply text-xs align-super;
+  }
+
+  /* Code */
+  code:not(.hljs) {
+    @apply px-1.5 py-0.5 rounded text-sm;
+    font-family: var(--font-mono);
+    background-color: var(--color-muted);
+    color: var(--color-accent-foreground);
+  }
+
+  /* Syntax highlighting colors matching app theme */
+  .hljs {
+    background: transparent;
+    color: var(--color-foreground);
+  }
+
+  .hljs-keyword {
+    color: oklch(76.11% 0.1443570792912574 355.5913692545148);
+    font-weight: bold;
+  }
+
+  .hljs-string {
+    color: oklch(81.18% 0.06681661646078704 170.17525299382157);
+  }
+
+  .hljs-number {
+    color: oklch(83.97% 0.08652442635877346 44.73250741601885);
+  }
+
+  .hljs-literal {
+    color: oklch(80.56% 0.11341334174981924 328.5950382282006);
+  }
+
+  .hljs-comment {
+    color: oklch(53.48% 0.05367828605045037 314.76697315041264);
+    font-style: italic;
+  }
+
+  .hljs-function,
+  .hljs-class,
+  .hljs-built_in {
+    color: oklch(76.42% 0.10507838061878935 297.7087177775153);
+  }
+
+  .function_ {
+    color: oklch(76.42% 0.10507838061878935 297.7087177775153);
+  }
+
+  .hljs-variable {
+    color: var(--color-foreground);
+  }
+
+  .hljs-operator {
+    color: var(--color-foreground);
+  }
+
+  .hljs-punctuation {
+    color: var(--color-muted-foreground);
+  }
+
+  .hljs-attribute {
+    color: var(--color-accent);
+  }
+
+  .hljs-tag {
+    color: var(--color-primary);
+  }
+
+  pre {
+    @apply p-4 overflow-x-auto mb-4;
+    font-family: var(--font-mono);
+    background-color: var(--color-muted);
+    border-radius: var(--radius-lg);
+  }
+
+  pre code {
+    @apply bg-transparent p-0;
+    color: var(--color-foreground);
+  }
+
+  /* Blockquotes */
+  blockquote {
+    @apply border-l-4 pl-4 py-2 mb-4 italic;
+    border-color: var(--color-border);
+    color: var(--color-muted-foreground);
+    background-color: var(--color-muted);
+  }
+
+  /* Horizontal Rule */
+  hr {
+    @apply my-8 border-t-2;
+    border-color: var(--color-border);
+  }
+
+  /* Tables */
+  table {
+    @apply w-full border-collapse mb-4 text-sm;
+  }
+
+  thead {
+    background-color: var(--color-muted);
+  }
+
+  th {
+    @apply px-4 py-2 text-left font-semibold;
+    border: 1px solid var(--color-border);
+    color: var(--color-foreground);
+  }
+
+  td {
+    @apply px-4 py-2;
+    border: 1px solid var(--color-border);
+    color: var(--color-muted-foreground);
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: var(--color-muted);
+    opacity: 0.5;
+  }
+
+  tbody tr:hover {
+    background-color: var(--color-accent);
+    opacity: 0.3;
+  }
+
+  /* Images */
+  img {
+    @apply max-w-full h-auto mb-4;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Task Lists */
+  input[type="checkbox"] {
+    @apply mr-2 cursor-pointer;
+    accent-color: var(--color-primary);
+  }
+
+  /* Definition Lists */
+  dl {
+    @apply mb-4;
+  }
+
+  dt {
+    @apply font-bold mt-2;
+    color: var(--color-foreground);
+  }
+
+  dd {
+    @apply ml-6 mb-2;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Abbreviations */
+  abbr {
+    @apply border-b-2 border-dotted cursor-help;
+    border-color: var(--color-border);
+  }
+
+  /* Keyboard Input */
+  kbd {
+    @apply px-2 py-1 text-sm shadow-sm;
+    font-family: var(--font-mono);
+    background-color: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Sample Output */
+  samp {
+    @apply px-1;
+    font-family: var(--font-mono);
+    background-color: var(--color-muted);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Variables */
+  var {
+    @apply italic;
+    font-family: var(--font-mono);
+  }
+
+  /* Figures */
+  figure {
+    @apply mb-4;
+  }
+
+  figcaption {
+    @apply text-sm mt-2 text-center italic;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Details/Summary */
+  details {
+    @apply mb-4 p-4;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-card);
+  }
+
+  summary {
+    @apply cursor-pointer font-semibold;
+    color: var(--color-foreground);
+  }
+
+  summary:hover {
+    color: var(--color-primary);
+  }
+
+  ::selection {
+    background-color: var(--color-selected);
+  }
+
+  a::selection {
+    color: var(--color-accent-foreground);
+  }
+
+  .tiptap {
+    min-height: 90vh !important;
+    display: block;
+    cursor: text;
+  }
+
+  .ProseMirror,
+  .ProseMirror-focused {
+    outline: none !important;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    -webkit-tab-size: 4;
+  }
+
+  .p-2\.5.saving .font-medium.mb-1::after {
+    content: " (saving...)";
+    opacity: 0.6;
+  }
+
+  .p-2\.5.saved .font-medium.mb-1::after {
+    content: " ✓";
+    color: green;
+    opacity: 0.8;
+  }
+
+  /* Dividers with text */
+  .divider {
+    @apply flex items-center my-6;
+  }
+
+  .divider::before,
+  .divider::after {
+    @apply flex-1;
+    content: "";
+    border-top: 1px solid var(--color-border);
+  }
+
+  .divider::before {
+    @apply mr-4;
+  }
+
+  .divider::after {
+    @apply ml-4;
+  }
 }

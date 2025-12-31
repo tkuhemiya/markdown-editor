@@ -1,13 +1,19 @@
-import { marked } from "marked"
-import { Editor } from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import { Markdown } from '@tiptap/markdown'
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import { createLowlight, common } from 'lowlight'
+import { marked } from "marked";
+import { Editor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import { Markdown } from "@tiptap/markdown";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { createLowlight, common } from "lowlight";
 import { debounce } from "./utils";
-import { initDB } from "./db"
+import { initDB } from "./db";
 import type { Note } from "./note";
-import { getLastOpenedNote, saveNote, loadNote, listNotes, deleteNote } from "./note";
+import {
+  getLastUpdatedNote,
+  saveNote,
+  loadNote,
+  listNotes,
+  deleteNote,
+} from "./note";
 
 // Auto-focus editor on page load
 setTimeout(() => editor.commands.focus(), 100);
@@ -15,19 +21,19 @@ setTimeout(() => editor.commands.focus(), 100);
 // Global state
 let currentNote: Note | null = null;
 let hasUnsavedChanges = false;
-let noteSaveStates = new Map<number, 'idle' | 'saving' | 'saved' | 'unsaved'>();
+let noteSaveStates = new Map<number, "idle" | "saving" | "saved" | "unsaved">();
 
-const lowlight = createLowlight(common)
+const lowlight = createLowlight(common);
 
 // Initialize database and load last document
-const db = await initDB() as IDBDatabase;
+const db = (await initDB()) as IDBDatabase;
 if (db === null || db == undefined) {
-  throw Error("error initializing database")
+  throw Error("error initializing database");
 }
-currentNote = await getLastOpenedNote(db);
+currentNote = await getLastUpdatedNote(db);
 
 const editor = new Editor({
-  element: document.getElementById('editor'),
+  element: document.getElementById("editor"),
   extensions: [
     StarterKit.configure({
       codeBlock: false,
@@ -37,24 +43,23 @@ const editor = new Editor({
     }),
     Markdown,
   ],
-  content: currentNote ? currentNote.content : '',
-  contentType: 'markdown',
+  content: currentNote ? currentNote.content : "",
+  contentType: "markdown",
   onUpdate: debounce(autoSave, 1000),
   onBlur({ editor }) {
     setTimeout(() => {
-      console.log("focus")
-      editor.commands.focus('end');
+      console.log("focus");
+      editor.commands.focus("end");
     }, 10);
   },
 });
-
 
 // Auto-save function
 async function autoSave() {
   if (!currentNote || !currentNote.id || !hasUnsavedChanges) return;
 
   const docId = currentNote.id;
-  noteSaveStates.set(docId, 'saving');
+  noteSaveStates.set(docId, "saving");
   updateNoteList();
 
   const markdown = editor.getMarkdown();
@@ -63,49 +68,49 @@ async function autoSave() {
 
   try {
     await saveNote(db, currentNote);
-    noteSaveStates.set(docId, 'saved');
+    noteSaveStates.set(docId, "saved");
     hasUnsavedChanges = false;
     updateNoteList();
 
     // Reset to idle after 2 seconds
     setTimeout(() => {
-      noteSaveStates.set(docId, 'idle');
+      noteSaveStates.set(docId, "idle");
       updateNoteList();
     }, 2000);
   } catch (error) {
-    noteSaveStates.set(docId, 'idle');
-    console.error('Auto-save failed:', error);
+    noteSaveStates.set(docId, "idle");
+    console.error("Auto-save failed:", error);
     updateNoteList();
   }
 }
 
 // Sidebar functionality
-const sidebar = document.getElementById('sidebar')!;
-const sidebarToggle = document.getElementById('sidebar-toggle')!;
-const mainContent = document.querySelector('.main-content')!;
-const newDocBtn = document.getElementById('new-note')!;
-const noteList = document.getElementById('note-list')!;
+const sidebar = document.getElementById("sidebar")!;
+const sidebarToggle = document.getElementById("sidebar-toggle")!;
+const mainContent = document.querySelector(".main-content")!;
+const newDocBtn = document.getElementById("new-note")!;
+const noteList = document.getElementById("note-list")!;
 
 // Context menu
-const contextMenu = document.getElementById('context-menu')!;
+const contextMenu = document.getElementById("context-menu")!;
 
 function toggleSidebar() {
-  sidebar.classList.toggle('translate-x-0');
-  mainContent.classList.toggle('md:ml-[250px]');
+  sidebar.classList.toggle("translate-x-0");
+  mainContent.classList.toggle("md:ml-[250px]");
 
   if (window.innerWidth <= 768) {
     // Mobile: overlay mode
-    if (sidebar.classList.contains('translate-x-0')) {
-      (mainContent as HTMLElement).style.display = 'none';
+    if (sidebar.classList.contains("translate-x-0")) {
+      (mainContent as HTMLElement).style.display = "none";
     } else {
-      (mainContent as HTMLElement).style.display = '';
+      (mainContent as HTMLElement).style.display = "";
     }
   }
 }
 
-sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarToggle.addEventListener("click", toggleSidebar);
 
-newDocBtn.addEventListener('click', async () => {
+newDocBtn.addEventListener("click", async () => {
   if (hasUnsavedChanges) {
     const shouldSave = await showUnsavedModal();
     if (shouldSave === null) return; // Cancelled
@@ -117,15 +122,14 @@ newDocBtn.addEventListener('click', async () => {
   const docName = await generateNextNoteName();
   currentNote = {
     name: docName,
-    content: '',
+    content: "",
     createdAt: new Date(),
     updatedAt: new Date(),
-    lastOpened: new Date(),
   };
 
   // Immediately save to get ID and make it appear in sidebar
   currentNote.id = await saveNote(db, currentNote);
-  noteSaveStates.set(currentNote.id!, 'idle');
+  noteSaveStates.set(currentNote.id!, "idle");
 
   editor.commands.clearContent();
   hasUnsavedChanges = false;
@@ -145,64 +149,67 @@ async function loadNoteById(id: number) {
     const doc = await loadNote(db, id);
     if (doc) {
       currentNote = doc;
-      editor.commands.setContent(doc.content, { contentType: 'markdown', parseOptions: { preserveWhitespace: true } });
+      editor.commands.setContent(doc.content, {
+        contentType: "markdown",
+        parseOptions: { preserveWhitespace: true },
+      });
       hasUnsavedChanges = false;
-      noteSaveStates.set(id, 'idle');
+      noteSaveStates.set(id, "idle");
       updateNoteList();
     }
   } catch (error) {
-    console.error('Failed to load document:', error);
+    console.error("Failed to load document:", error);
   }
 }
 
 async function updateNoteList() {
   try {
     const docs = await listNotes(db);
-    noteList.innerHTML = '';
+    noteList.innerHTML = "";
 
-    docs.forEach(doc => {
-      const li = document.createElement('li');
-      const state = noteSaveStates.get(doc.id!) || 'idle';
+    docs.forEach((doc) => {
+      const li = document.createElement("li");
+      const state = noteSaveStates.get(doc.id!) || "idle";
       const isCurrent = currentNote?.id === doc.id;
       const hasChanges = hasUnsavedChanges && isCurrent;
 
-      li.className = `m-1 rounded-md p-2.5 border-b border-border cursor-pointer transition-colors duration-200 ease hover:bg-accent ${isCurrent ? 'bg-primary text-primary-foreground' : ''} ${hasChanges ? 'italic' : ''} ${state}`;
+      li.className = `m-1 rounded-md p-2.5 border-b border-border cursor-pointer transition-colors duration-200 ease hover:bg-accent ${isCurrent ? "bg-primary text-primary-foreground" : ""} ${hasChanges ? "italic" : ""} ${state}`;
       li.dataset.docId = doc.id!.toString();
 
-      const nameDiv = document.createElement('div');
-      nameDiv.className = 'font-medium mb-1';
+      const nameDiv = document.createElement("div");
+      nameDiv.className = "font-medium mb-1";
       nameDiv.textContent = doc.name;
 
-      const dateDiv = document.createElement('div');
-      dateDiv.className = 'text-xs text-muted-foreground';
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "text-xs text-muted-foreground";
       dateDiv.textContent = new Date(doc.updatedAt).toLocaleDateString();
 
       li.appendChild(nameDiv);
       li.appendChild(dateDiv);
-      li.addEventListener('click', () => loadNoteById(doc.id!));
+      li.addEventListener("click", () => loadNoteById(doc.id!));
 
       noteList.appendChild(li);
     });
   } catch (error) {
-    console.error('Failed to load document list:', error);
+    console.error("Failed to load document list:", error);
   }
 }
 
 // Modal functionality
-const unsavedModal = document.getElementById('unsaved-modal')!;
-const saveBtn = document.getElementById('save-changes')!;
-const discardBtn = document.getElementById('discard-changes')!;
-const cancelBtn = document.getElementById('cancel-action')!;
+const unsavedModal = document.getElementById("unsaved-modal")!;
+const saveBtn = document.getElementById("save-changes")!;
+const discardBtn = document.getElementById("discard-changes")!;
+const cancelBtn = document.getElementById("cancel-action")!;
 
 function showUnsavedModal(): Promise<boolean | null> {
   return new Promise((resolve) => {
-    unsavedModal.classList.remove('hidden');
+    unsavedModal.classList.remove("hidden");
 
     const cleanup = () => {
-      unsavedModal.classList.add('hidden');
-      saveBtn.removeEventListener('click', onSave);
-      discardBtn.removeEventListener('click', onDiscard);
-      cancelBtn.removeEventListener('click', onCancel);
+      unsavedModal.classList.add("hidden");
+      saveBtn.removeEventListener("click", onSave);
+      discardBtn.removeEventListener("click", onDiscard);
+      cancelBtn.removeEventListener("click", onCancel);
     };
 
     const onSave = () => {
@@ -220,16 +227,16 @@ function showUnsavedModal(): Promise<boolean | null> {
       resolve(null);
     };
 
-    saveBtn.addEventListener('click', onSave);
-    discardBtn.addEventListener('click', onDiscard);
-    cancelBtn.addEventListener('click', onCancel);
+    saveBtn.addEventListener("click", onSave);
+    discardBtn.addEventListener("click", onDiscard);
+    cancelBtn.addEventListener("click", onCancel);
   });
 }
 
 async function saveCurrentDocument() {
   if (!currentNote) return;
 
-  const name = prompt('Enter note name:', currentNote.name);
+  const name = prompt("Enter note name:", currentNote.name);
   if (!name) return;
 
   currentNote.name = name;
@@ -240,18 +247,18 @@ async function saveCurrentDocument() {
     hasUnsavedChanges = false;
     updateNoteList();
   } catch (error) {
-    console.error('Failed to save document:', error);
+    console.error("Failed to save document:", error);
   }
 }
 
 // Track changes
-editor.on('update', () => {
+editor.on("update", () => {
   hasUnsavedChanges = true;
 });
 
 // Paste handling
-editor.on('paste', ({ editor: tipTapEditor, event }) => {
-  const pastedText = event.clipboardData?.getData('text/plain');
+editor.on("paste", ({ editor: tipTapEditor, event }) => {
+  const pastedText = event.clipboardData?.getData("text/plain");
   if (pastedText) {
     const html = marked.parse(pastedText);
     tipTapEditor.commands.insertContent(html);
@@ -260,7 +267,7 @@ editor.on('paste', ({ editor: tipTapEditor, event }) => {
 });
 
 // Auto-focus on window focus
-window.addEventListener('focus', () => {
+window.addEventListener("focus", () => {
   setTimeout(() => editor.commands.focus(), 50);
 });
 
@@ -269,15 +276,15 @@ function showContextMenu(x: number, y: number, docId: number) {
   contextMenu.style.left = `${x}px`;
   contextMenu.style.top = `${y}px`;
   contextMenu.dataset.docId = docId.toString();
-  contextMenu.classList.remove('hidden');
+  contextMenu.classList.remove("hidden");
 }
 
 function hideContextMenu() {
-  contextMenu.classList.add('hidden');
+  contextMenu.classList.add("hidden");
 }
 
 // Context menu event listeners
-noteList.addEventListener('contextmenu', (e) => {
+noteList.addEventListener("contextmenu", (e) => {
   e.preventDefault();
   const item = (e.target as Element).closest('[class*="p-2.5"]') as HTMLElement;
   if (!item) return;
@@ -286,7 +293,7 @@ noteList.addEventListener('contextmenu', (e) => {
   showContextMenu(e.clientX, e.clientY, docId);
 });
 
-contextMenu.addEventListener('click', async (e) => {
+contextMenu.addEventListener("click", async (e) => {
   const target = e.target as HTMLElement;
   const action = target.dataset.action;
   const docId = parseInt(contextMenu.dataset.docId!);
@@ -294,13 +301,13 @@ contextMenu.addEventListener('click', async (e) => {
   if (!action || !docId) return;
 
   switch (action) {
-    case 'rename':
+    case "rename":
       await renameNote(docId);
       break;
-    case 'copy':
+    case "copy":
       await copyNoteContent(docId);
       break;
-    case 'delete':
+    case "delete":
       await deleteNoteHandler(docId);
       break;
   }
@@ -308,7 +315,7 @@ contextMenu.addEventListener('click', async (e) => {
   hideContextMenu();
 });
 
-document.addEventListener('click', (e) => {
+document.addEventListener("click", (e) => {
   if (!contextMenu.contains(e.target as Node)) {
     hideContextMenu();
   }
@@ -320,14 +327,16 @@ async function renameNote(id: number) {
     const doc = await loadNote(db, id);
     if (!doc) return;
 
-    const newName = prompt('Enter new note name:', doc.name);
-    if (newName && newName.trim() !== '' && newName !== doc.name) {
+    const newName = prompt("Enter new note name:", doc.name);
+    if (newName && newName.trim() !== "" && newName !== doc.name) {
       const trimmedName = newName.trim();
 
       // Check for conflicts
       const docs = await listNotes(db);
-      if (docs.some(d => d.name === trimmedName && d.id !== id)) {
-        alert('A note with this name already exists. Please choose a different name.');
+      if (docs.some((d) => d.name === trimmedName && d.id !== id)) {
+        alert(
+          "A note with this name already exists. Please choose a different name.",
+        );
         return;
       }
 
@@ -336,7 +345,7 @@ async function renameNote(id: number) {
       updateNoteList();
     }
   } catch (error) {
-    console.error('Failed to rename document:', error);
+    console.error("Failed to rename document:", error);
   }
 }
 
@@ -347,23 +356,23 @@ async function copyNoteContent(id: number) {
 
     await navigator.clipboard.writeText(doc.content);
     // Could add a toast notification here
-    console.log('Content copied to clipboard');
+    console.log("Content copied to clipboard");
   } catch (error) {
-    console.error('Failed to copy content:', error);
+    console.error("Failed to copy content:", error);
     // Fallback for older browsers
     try {
       const doc = await loadNote(db, id);
       if (!doc) return;
 
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = doc.content;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
-      console.log('Content copied to clipboard (fallback)');
+      console.log("Content copied to clipboard (fallback)");
     } catch (fallbackError) {
-      console.error('Fallback copy also failed:', fallbackError);
+      console.error("Fallback copy also failed:", fallbackError);
     }
   }
 }
@@ -380,14 +389,14 @@ async function deleteNoteHandler(id: number) {
 
     updateNoteList();
   } catch (error) {
-    console.error('Failed to delete document:', error);
+    console.error("Failed to delete document:", error);
   }
 }
 
 // Name generation for conflict handling
 async function generateNextNoteName(): Promise<string> {
   const docs = await listNotes(db);
-  const existingNames = docs.map(d => d.name);
+  const existingNames = docs.map((d) => d.name);
 
   let counter = 1;
   let candidate = `Document ${counter}`;
@@ -399,11 +408,16 @@ async function generateNextNoteName(): Promise<string> {
 
   // Double-check for race conditions
   const refreshedDocs = await listNotes(db);
-  const refreshedNames = refreshedDocs.map(d => d.name);
+  const refreshedNames = refreshedDocs.map((d) => d.name);
 
   if (refreshedNames.includes(candidate)) {
-    const newName = prompt('Naming conflict occurred. Please enter a different note name:', candidate);
-    return newName && newName.trim() !== '' ? newName.trim() : `Note ${Date.now()}`;
+    const newName = prompt(
+      "Naming conflict occurred. Please enter a different note name:",
+      candidate,
+    );
+    return newName && newName.trim() !== ""
+      ? newName.trim()
+      : `Note ${Date.now()}`;
   }
 
   return candidate;

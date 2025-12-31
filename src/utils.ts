@@ -4,9 +4,9 @@ export function debounce(fn: Function, delay = 1000) {
   return function (...args: any) {
     clearTimeout(timer);
     timer = setTimeout(() => {
-      fn(args)
-    }, delay)
-  }
+      fn(args);
+    }, delay);
+  };
 }
 
 export async function compressText(text: string): Promise<string> {
