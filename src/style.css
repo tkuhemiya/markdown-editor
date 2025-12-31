@@ -95,27 +95,27 @@
 
     /* Paragraphs */
     p {
-        @apply mb-4 leading-relaxed;
+        @apply m-0 leading-relaxed;
         color: var(--color-muted-foreground);
     }
 
     /* Lists */
     ul {
-        @apply list-disc list-inside mb-4 space-y-2;
+        @apply list-disc list-inside;
         color: var(--color-muted-foreground);
     }
 
     ol {
-        @apply list-decimal list-inside mb-4 space-y-2;
+        @apply list-decimal list-inside;
         color: var(--color-muted-foreground);
     }
 
     li {
-        @apply ml-4 mb-2;
+        @apply m-0;
     }
 
     li p {
-        @apply mb-0;
+        @apply m-0;
         display: inline;
     }
 
@@ -388,7 +388,12 @@
         color: var(--color-accent-foreground)
     }
 
-    /* Remove Tiptap default focus outline */
+    .tiptap {
+        min-height: 90vh !important;
+        display: block;
+        cursor: text;
+    }
+
     .ProseMirror,
     .ProseMirror-focused {
         outline: none !important;

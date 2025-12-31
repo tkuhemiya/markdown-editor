@@ -40,6 +40,12 @@ const editor = new Editor({
   content: currentNote ? currentNote.content : '',
   contentType: 'markdown',
   onUpdate: debounce(autoSave, 1000),
+  onBlur({ editor }) {
+    setTimeout(() => {
+      console.log("focus")
+      editor.commands.focus('end');
+    }, 10);
+  },
 });
 
 
