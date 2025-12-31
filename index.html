@@ -18,7 +18,7 @@
     >
       <button
         id="sidebar-toggle"
-        class="absolute right-[-45px] top-2.5 bg-primary text-primary-foreground border border-ring px-2 md:pb-1 pb-0 rounded-md cursor-pointer text-base"
+        class="absolute right-[-45px] top-2.5 bg-gradient-to-b from-primary to-primary/80 text-primary-foreground border border-ring px-2 md:pb-1 pb-0 rounded-md cursor-pointer text-base"
       >
         ☰
       </button>
@@ -29,7 +29,7 @@
         >
           <button
             id="new-note"
-            class="bg-primary text-primary-foreground border border-ring px-2 py-1 rounded-md cursor-pointer text-sm w-full"
+            class="bg-gradient-to-b from-primary to-primary/80 text-primary-foreground border border-ring px-2 py-1 rounded-md cursor-pointer text-sm w-full"
           >
             + New
           </button>
@@ -47,41 +47,6 @@
         class="py-10 px-15 min-h-screen min-w-screen flex items-center"
       ></div>
     </main>
-
-    <!-- TODO: Automatically save unsaved changes-->
-    <div
-      id="unsaved-modal"
-      class="fixed inset-0 z-[2000] flex items-center justify-center hidden"
-    >
-      <div class="absolute inset-0 bg-black/50"></div>
-      <div
-        class="relative bg-card border border-border rounded-lg p-5 max-w-[400px] w-full shadow-lg"
-      >
-        <p class="m-0 mb-5 text-foreground">
-          You have unsaved changes. What would you like to do?
-        </p>
-        <div class="flex gap-2.5 justify-end">
-          <button
-            id="save-changes"
-            class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-primary text-primary-foreground"
-          >
-            Save
-          </button>
-          <button
-            id="discard-changes"
-            class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-destructive text-destructive-foreground"
-          >
-            Discard
-          </button>
-          <button
-            id="cancel-action"
-            class="p-2 px-4 border-none rounded cursor-pointer text-sm bg-secondary text-secondary-foreground"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
 
     <div
       id="context-menu"
