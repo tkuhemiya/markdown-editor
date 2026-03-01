@@ -1,4 +1,3 @@
-import { marked } from "marked";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "@tiptap/markdown";
