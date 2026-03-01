@@ -139,15 +139,6 @@ async function loadNoteById(id: number) {
   }
 }
 
-// Paste handling
-editor.on("paste", ({ editor: tipTapEditor, event }) => {
-  const pastedText = event.clipboardData?.getData("text/plain");
-  if (pastedText) {
-    const html = marked.parse(pastedText);
-    tipTapEditor.commands.insertContent(html);
-    event.preventDefault();
-  }
-});
 
 // Auto-focus on window focus
 window.addEventListener("focus", () => {
